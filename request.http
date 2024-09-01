@@ -1,0 +1,9 @@
+post https://0fb6-179-42-27-126.ngrok-free.app/msg
+Content-Type: application/json
+
+{
+    "content": "teste",
+    "sentiment": "negative",
+    "response": "This is a sample response",
+    "skill":"software"
+}
