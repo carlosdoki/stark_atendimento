@@ -25,33 +25,6 @@ class _ChatAtendenteState extends State<ChatAtendente> {
         'message': _messageController.text,
         'timestamp': FieldValue.serverTimestamp(),
       });
-
-      Dio dio = Dio();
-
-      Mensagem mensagem = Mensagem(
-        content: _messageController.text,
-        sentiment: '',
-        response: '',
-        skill: '',
-      );
-
-      try {
-        Response response = await dio.post(
-          'https://0fb6-179-42-27-126.ngrok-free.app/msg',
-          options: Options(
-            headers: {'Content-Type': 'application/json'},
-          ),
-          data: mensagem.toMap(),
-        );
-        await firestore.collection('starkai').add({
-          'sender': 'ia',
-          'message': response.data['response'],
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-        print(response.data);
-      } catch (e) {
-        print('Error: $e');
-      }
       _messageController.clear();
     }
   }
@@ -136,7 +109,11 @@ class _ChatAtendenteState extends State<ChatAtendente> {
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                                 child: ListTile(
-                                  title: Text(message['message']),
+                                  title: Text(message['message'],
+                                      style: TextStyle(
+                                          color: message['sender'] == 'ia'
+                                              ? Colors.white
+                                              : Colors.black)),
                                 ),
                               ),
                               const SizedBox(

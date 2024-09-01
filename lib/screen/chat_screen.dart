@@ -92,7 +92,8 @@ class _ChatScreenState extends State<ChatScreen> {
             resposta = response.data['response'];
             // Assuming the response contains the atendente information
             final atendenteInfo =
-                '${response.data['analyst']['name']} - Skill: ${response.data['analyst']['skill']}';
+                '${response.data['analyst']['name']} - Skill: ${response.data['analyst']['skill']} - ${response.data['analyst']['sentiment']}';
+
             widget.onAtendenteUpdated(atendenteInfo);
             // analyst: {id: 2, name: Sansa Stark, email: john.doe@example.com, skill: general, sentiment: positive, createdAt: 2024-09-01T08:17:36.403514Z, updatedAt: 2024-09-01T08:17:36.403514Z},
             print(response.data);
@@ -236,13 +237,13 @@ class _ChatScreenState extends State<ChatScreen> {
                                   title: Text(message['message']),
                                 ),
                               ),
-                              const SizedBox(
-                                height: 20,
-                              ),
                               Positioned(
-                                bottom: 10,
+                                bottom: -20,
                                 right: 20,
                                 child: Text(formattedTime),
+                              ),
+                              const SizedBox(
+                                height: 20,
                               ),
                             ],
                           ),
