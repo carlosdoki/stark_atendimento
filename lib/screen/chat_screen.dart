@@ -99,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
             print(response.data);
             switch (response.data['sentiment']) {
               case 'neutral':
-                nps = (nps + 3) / 2;
+                nps = (nps + 2.5) / 2;
               case 'positive':
                 nps = (nps + 5) / 2;
               case 'negative':
@@ -332,7 +332,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         height: 60,
                         child: Column(
                           children: [
-                            Text('NPS automático medido: ${nps}'),
+                            Text(
+                                'NPS automático medido: ${nps.toStringAsFixed(2)}'),
                             StarRating(
                               rating:
                                   nps, // You can set this to any number between 0 and 5
