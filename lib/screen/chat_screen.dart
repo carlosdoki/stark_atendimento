@@ -7,10 +7,15 @@ import '../model/mensagem.dart';
 
 class ChatScreen extends StatefulWidget {
   final String textToPopulate;
-  final VoidCallback onButtonPressed; // Callback for button press
+  final VoidCallback onButtonPressed;
+  final ValueChanged<String>
+      onAtendenteUpdated; // Callback for updating atendente
 
   const ChatScreen(
-      {super.key, required this.textToPopulate, required this.onButtonPressed});
+      {super.key,
+      required this.textToPopulate,
+      required this.onButtonPressed,
+      required this.onAtendenteUpdated});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -21,6 +26,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   late Stream<QuerySnapshot> _collectionAStream;
   String docIdAnt = '';
+  late double nps = 0;
 
   @override
   void didUpdateWidget(covariant ChatScreen oldWidget) {
@@ -84,7 +90,29 @@ class _ChatScreenState extends State<ChatScreen> {
               'timestamp': FieldValue.serverTimestamp(),
             });
             resposta = response.data['response'];
+            // Assuming the response contains the atendente information
+            final atendenteInfo =
+                '${response.data['analyst']['name']} - Skill: ${response.data['analyst']['skill']}';
+            widget.onAtendenteUpdated(atendenteInfo);
+            // analyst: {id: 2, name: Sansa Stark, email: john.doe@example.com, skill: general, sentiment: positive, createdAt: 2024-09-01T08:17:36.403514Z, updatedAt: 2024-09-01T08:17:36.403514Z},
             print(response.data);
+            switch (response.data['sentiment']) {
+              case 'neutral':
+                nps = (nps + 3) / 2;
+              case 'positive':
+                nps = (nps + 5) / 2;
+              case 'negative':
+                nps = (nps + 2) / 2;
+                break;
+              case 'extremely positive':
+              case 'extremely negative':
+                break;
+              case 'ambiguous':
+                break;
+              case 'mixed':
+                nps = (nps + 0) / 2;
+                break;
+            }
           }
         } catch (e) {
           print('Error: $e');
@@ -206,11 +234,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                 ),
                                 child: ListTile(
                                   title: Text(message['message']),
-                                  trailing: Text(formattedTime),
                                 ),
                               ),
                               const SizedBox(
                                 height: 20,
+                              ),
+                              Positioned(
+                                bottom: 10,
+                                right: 20,
+                                child: Text(formattedTime),
                               ),
                             ],
                           ),
@@ -219,8 +251,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                   bottom: 10,
                                   right: 20,
                                   child: Container(
-                                    width: 30,
-                                    height: 30,
+                                    width: 50,
+                                    height: 50,
                                     padding: const EdgeInsets.all(5),
                                     decoration: const BoxDecoration(
                                       color: Color(0xFFF7F9FA),
@@ -234,7 +266,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                       ],
                                     ),
                                     child: sentiment == 'mixed'
-                                        ? Image.asset('assets/smile.png')
+                                        ? Image.asset(
+                                            'assets/smile.png',
+                                          )
                                         : sentiment == 'negative'
                                             ? Image.asset('assets/mad.png')
                                             : sentiment == 'positive'
@@ -253,6 +287,8 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           Container(
+            alignment: Alignment.topLeft,
+            height: 150,
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
@@ -261,11 +297,15 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: '',
-                      border: InputBorder.none,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: const InputDecoration(
+                        hintText: '',
+                        border: InputBorder.none,
+                      ),
+                      maxLines: 8,
                     ),
                   ),
                 ),
@@ -286,7 +326,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   builder: (BuildContext context) {
                     return AlertDialog(
                       title: const Text('Atendimento finalizado'),
-                      content: const Text('NPS automático medido: 5.0'),
+                      content: SizedBox(
+                        width: 250,
+                        height: 60,
+                        child: Column(
+                          children: [
+                            Text('NPS automático medido: ${nps}'),
+                            StarRating(
+                              rating:
+                                  nps, // You can set this to any number between 0 and 5
+                            ),
+                          ],
+                        ),
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () {
@@ -315,6 +367,33 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class StarRating extends StatelessWidget {
+  final double rating;
+
+  StarRating({required this.rating});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        IconData icon;
+        if (index < rating.floor()) {
+          icon = Icons.star;
+        } else if (index < rating && rating % 1 != 0) {
+          icon = Icons.star_half;
+        } else {
+          icon = Icons.star_border;
+        }
+        return Icon(
+          icon,
+          color: Colors.amber,
+        );
+      }),
     );
   }
 }

@@ -15,6 +15,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   bool bAparecer = false;
   String _sharedText = '';
+  String atendente = '';
 
   void _updateText(String text) {
     setState(() {
@@ -25,6 +26,12 @@ class _HomeState extends State<Home> {
   void _updateBAparecer(bool value) {
     setState(() {
       bAparecer = value;
+    });
+  }
+
+  void _updateAtendente(String name) {
+    setState(() {
+      atendente = name;
     });
   }
 
@@ -107,7 +114,7 @@ class _HomeState extends State<Home> {
                                         });
                                       },
                                       child: const Text(
-                                        'Atendimentos',
+                                        'Atendimento',
                                         style:
                                             TextStyle(color: Color(0xFF0070E0)),
                                       ),
@@ -117,6 +124,17 @@ class _HomeState extends State<Home> {
                               ],
                             ),
                             const SizedBox(height: 30),
+                            bAparecer
+                                ? Center(
+                                    child: Text(
+                                      'Atendente: $atendente',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  )
+                                : Container(),
                             bAparecer
                                 ? Row(
                                     children: [
@@ -145,6 +163,8 @@ class _HomeState extends State<Home> {
                                             onButtonPressed: () {
                                               _updateBAparecer(false);
                                             },
+                                            onAtendenteUpdated:
+                                                _updateAtendente,
                                           ),
                                         ),
                                       ),
